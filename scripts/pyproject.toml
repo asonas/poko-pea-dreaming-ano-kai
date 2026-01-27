@@ -1,0 +1,13 @@
+[project]
+name = "poko-pea-scripts"
+version = "0.1.0"
+description = "Data processing scripts for poko-pea semantic search"
+requires-python = ">=3.10"
+dependencies = [
+    "sentence-transformers>=2.2.0",
+    "supabase>=2.0.0",
+    "numpy>=1.24.0",
+]
+
+[tool.uv]
+dev-dependencies = []
