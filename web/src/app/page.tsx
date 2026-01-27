@@ -277,8 +277,9 @@ export default function Home() {
       )}
 
       {/* フッター */}
-      <footer className="mt-16 pt-8 border-t border-pokopea-gray/30 text-center text-sm text-pokopea-gray">
+      <footer className="mt-16 pt-8 border-t border-pokopea-gray/30 text-center text-sm text-pokopea-gray space-y-2">
         <p>
+          本サイトは
           <a
             href="https://www.youtube.com/@pokopeadreaming"
             target="_blank"
@@ -287,7 +288,21 @@ export default function Home() {
           >
             ぽこピーのゆめうつつ
           </a>
-          の文字起こしデータを使用しています
+          の非公式ファンサイトです
+        </p>
+        <p>
+          文字起こしデータの全文は公開・検索できない仕様になっています
+        </p>
+        <p>
+          お問い合わせ:
+          <a
+            href="https://x.com/asonas"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-pokopea-pink hover:underline ml-1"
+          >
+            @asonas
+          </a>
         </p>
       </footer>
       </div>
