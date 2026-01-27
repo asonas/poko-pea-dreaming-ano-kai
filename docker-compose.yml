@@ -1,0 +1,20 @@
+services:
+  whisper:
+    build: .
+    image: poko-pea-whisper
+    volumes:
+      - ./scripts:/app/scripts:ro
+      - ./data:/app/data
+    environment:
+      - WHISPER_MODEL=${WHISPER_MODEL:-large}
+      - NVIDIA_VISIBLE_DEVICES=all
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    working_dir: /app
+    stdin_open: true
+    tty: true
