@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'ぽこピーのゆめうつつ 検索',
-  description: 'ぽこピーのゆめうつつの文字起こしをセマンティック検索',
+  title: 'ぽこピーのゆめうつつのあの回',
+  description: 'ぽこピーのゆめうつつのあの回を探せるWebアプリケーション',
 };
 
 export default function RootLayout({
