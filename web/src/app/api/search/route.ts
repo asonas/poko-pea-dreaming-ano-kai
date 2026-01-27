@@ -3,6 +3,7 @@ import { createServerSupabaseClient, SearchResult } from '@/lib/supabase';
 import { generateQueryEmbedding } from '@/lib/embeddings';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 export const maxDuration = 30; // タイムアウト30秒
 
 export async function GET(request: NextRequest) {

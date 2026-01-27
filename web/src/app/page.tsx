@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, FormEvent, useMemo, useEffect, useCallback } from 'react';
+import { useState, FormEvent, useMemo, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { SearchResult } from '@/lib/supabase';
 
@@ -78,7 +78,7 @@ function highlightText(text: string, query: string): React.ReactNode {
   });
 }
 
-export default function Home() {
+function SearchContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -307,5 +307,21 @@ export default function Home() {
       </footer>
       </div>
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <main className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="bg-white/95 rounded-2xl shadow-lg p-6 md:p-8">
+          <div className="text-center py-12 text-pokopea-gray">
+            読み込み中...
+          </div>
+        </div>
+      </main>
+    }>
+      <SearchContent />
+    </Suspense>
   );
 }
