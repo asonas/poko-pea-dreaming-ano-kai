@@ -148,7 +148,7 @@ export default function Home() {
       {/* ヘッダー */}
       <header className="text-center mb-8">
         <h1 className="text-3xl font-bold text-pokopea-navy mb-2">
-          ぽこピーのゆめうつつ 検索
+          ぽこピーのゆめうつつのあの回
         </h1>
         <p className="text-pokopea-gray">
           会話の内容や雰囲気から関連するシーンを検索できます
