@@ -3,7 +3,18 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'ぽこピーのゆめうつつのあの回',
-  description: 'ぽこピーのゆめうつつのあの回を探せるWebアプリケーション',
+  description: '『ぽこピーのゆめうつつ』のあの回どれだっけかな？のときに役に立つサイトです',
+  openGraph: {
+    title: 'ぽこピーのゆめうつつのあの回',
+    description: '『ぽこピーのゆめうつつ』のあの回どれだっけかな？のときに役に立つサイトです',
+    type: 'website',
+    locale: 'ja_JP',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'ぽこピーのゆめうつつのあの回',
+    description: '『ぽこピーのゆめうつつ』のあの回どれだっけかな？のときに役に立つサイトです',
+  },
 };
 
 export default function RootLayout({
