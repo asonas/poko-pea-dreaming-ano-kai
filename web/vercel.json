@@ -1,0 +1,15 @@
+{
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.poko-pea-dream.ing"
+        }
+      ],
+      "destination": "https://poko-pea-dream.ing/:path*",
+      "permanent": true
+    }
+  ]
+}
