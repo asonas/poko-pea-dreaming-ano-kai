@@ -5,6 +5,8 @@ services:
     volumes:
       - ./scripts:/app/scripts:ro
       - ./data:/app/data
+    env_file:
+      - .env
     environment:
       - WHISPER_MODEL=${WHISPER_MODEL:-large}
       - NVIDIA_VISIBLE_DEVICES=all
