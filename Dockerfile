@@ -15,22 +15,23 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# python3をデフォルトに設定
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
+# python3とpipをpython3.11に設定
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1 && \
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
 
 # 作業ディレクトリ設定
 WORKDIR /app
 
 # Pythonパッケージのインストール
 # PyTorchを先にCUDA版でインストール
-RUN pip install --upgrade pip && \
-    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+RUN python -m pip install --upgrade pip && \
+    python -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
 
 # その他のパッケージをインストール
-RUN pip install yt-dlp openai-whisper
+RUN python -m pip install yt-dlp openai-whisper
 
 # Embedding用パッケージをインストール
-RUN pip install sentence-transformers
+RUN python -m pip install sentence-transformers
 
 # スクリプトディレクトリ作成
 RUN mkdir -p /app/scripts /app/data/audio /app/data/transcripts/txt /app/data/transcripts/srt /app/data/embeddings
