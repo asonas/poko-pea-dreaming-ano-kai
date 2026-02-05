@@ -1,5 +1,5 @@
 # GPU対応 Whisper文字起こし環境
-FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
+FROM nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04
 
 # 環境変数設定
 ENV DEBIAN_FRONTEND=noninteractive
@@ -8,15 +8,15 @@ ENV PIP_NO_CACHE_DIR=1
 
 # システムパッケージのインストール
 RUN apt-get update && apt-get install -y \
-    python3.10 \
+    python3.11 \
     python3-pip \
-    python3.10-venv \
+    python3.11-venv \
     ffmpeg \
     git \
     && rm -rf /var/lib/apt/lists/*
 
 # python3をデフォルトに設定
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
 
 # 作業ディレクトリ設定
 WORKDIR /app
@@ -24,7 +24,7 @@ WORKDIR /app
 # Pythonパッケージのインストール
 # PyTorchを先にCUDA版でインストール
 RUN pip install --upgrade pip && \
-    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
 
 # その他のパッケージをインストール
 RUN pip install yt-dlp openai-whisper
