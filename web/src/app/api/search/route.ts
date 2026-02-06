@@ -5,6 +5,7 @@ import { computeEmbeddingDebugInfo } from '@/lib/embedding-debug';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
 export const maxDuration = 30; // タイムアウト30秒
 
 export async function GET(request: NextRequest) {
@@ -78,7 +79,11 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    return NextResponse.json(response);
+    return NextResponse.json(response, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+      },
+    });
   } catch (error) {
     console.error('Search error:', error);
     return NextResponse.json(
