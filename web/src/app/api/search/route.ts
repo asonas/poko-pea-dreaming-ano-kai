@@ -70,8 +70,11 @@ export async function GET(request: NextRequest) {
     };
 
     if (debug) {
+      const supabaseUrl = process.env.SUPABASE_URL || '';
       response.debug = {
         embedding: computeEmbeddingDebugInfo(queryEmbedding),
+        fullVector: queryEmbedding,
+        supabaseUrl,
       };
     }
 
