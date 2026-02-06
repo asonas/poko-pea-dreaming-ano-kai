@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient, SearchResult } from '@/lib/supabase';
 import { generateQueryEmbedding } from '@/lib/embeddings';
+import { computeEmbeddingDebugInfo } from '@/lib/embedding-debug';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -12,6 +13,7 @@ export async function GET(request: NextRequest) {
     const query = searchParams.get('q') || '';
     const limit = parseInt(searchParams.get('limit') || '10', 10);
     const threshold = parseFloat(searchParams.get('threshold') || '0.3');
+    const debug = searchParams.get('debug') === 'true';
 
     if (!query) {
       return NextResponse.json(
@@ -57,7 +59,7 @@ export async function GET(request: NextRequest) {
 
     const results: SearchResult[] = data || [];
 
-    return NextResponse.json({
+    const response: Record<string, unknown> = {
       results,
       meta: {
         query,
@@ -65,7 +67,15 @@ export async function GET(request: NextRequest) {
         embeddingTimeMs: embeddingTime,
         totalTimeMs: searchTime,
       },
-    });
+    };
+
+    if (debug) {
+      response.debug = {
+        embedding: computeEmbeddingDebugInfo(queryEmbedding),
+      };
+    }
+
+    return NextResponse.json(response);
   } catch (error) {
     console.error('Search error:', error);
     return NextResponse.json(
