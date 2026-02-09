@@ -279,7 +279,7 @@ function SearchContent() {
       {/* フッター */}
       <footer className="mt-16 pt-8 border-t border-pokopea-gray/30 text-center text-sm text-pokopea-gray space-y-2">
         <p>
-          文字起こしデータの全文は公開・検索できない仕様になっています
+          文字起こしデータの全文は公開・検索できません
         </p>
         <p>
           お問い合わせ:
