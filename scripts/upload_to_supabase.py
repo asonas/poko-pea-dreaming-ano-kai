@@ -76,22 +76,25 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(description='Upload data to Supabase')
-    parser.add_argument('--episodes-file', default='/app/data/chunks/episodes.json',
+    script_dir = Path(__file__).parent
+    parser.add_argument('--episodes-file', default=str(script_dir / '../data/chunks/episodes.json'),
                         help='Episodes JSON file')
-    parser.add_argument('--chunks-file', default='/app/data/embeddings/chunks_with_embeddings.json',
+    parser.add_argument('--chunks-file', default=str(script_dir / '../data/embeddings/chunks_with_embeddings.json'),
                         help='Chunks with embeddings JSON file')
     parser.add_argument('--supabase-url', default=os.environ.get('SUPABASE_URL'),
                         help='Supabase project URL')
-    parser.add_argument('--supabase-key', default=os.environ.get('SUPABASE_SERVICE_ROLE_KEY'),
-                        help='Supabase service role key')
+    # SUPABASE_API_KEY を優先し、なければ SUPABASE_SERVICE_ROLE_KEY にフォールバック
+    default_key = os.environ.get('SUPABASE_API_KEY') or os.environ.get('SUPABASE_SERVICE_ROLE_KEY')
+    parser.add_argument('--supabase-key', default=default_key,
+                        help='Supabase API key')
     parser.add_argument('--batch-size', type=int, default=100,
                         help='Batch size for chunk upload')
-    
+
     args = parser.parse_args()
-    
+
     # 環境変数チェック
     if not args.supabase_url or not args.supabase_key:
-        print("Error: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set")
+        print("Error: SUPABASE_URL and SUPABASE_API_KEY must be set")
         print("Set environment variables or use --supabase-url and --supabase-key arguments")
         exit(1)
     

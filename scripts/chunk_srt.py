@@ -119,20 +119,23 @@ def parse_filename(filename: str) -> dict:
     例: 20250407_＃１タクシーで話しかけらたらどうする？_y9QQS1a1Mzs.srt
     """
     stem = Path(filename).stem
-    parts = stem.split('_')
-    
-    # 日付
-    date_str = parts[0] if parts else ''
+
+    # 日付 (先頭8文字)
+    date_str = stem[:8]
     try:
         upload_date = datetime.strptime(date_str, '%Y%m%d').strftime('%Y-%m-%d')
     except ValueError:
         upload_date = None
-    
-    # YouTube ID (最後の部分)
-    youtube_id = parts[-1] if len(parts) > 1 else ''
-    
-    # タイトル (中間部分を結合)
-    title = '_'.join(parts[1:-1]) if len(parts) > 2 else ''
+
+    # YouTube ID (末尾11文字、アンダースコアを含む場合があるため固定長で切り出す)
+    youtube_id = stem[-11:] if len(stem) > 11 else ''
+
+    # タイトル (日付の後の_からYouTube IDの前の_まで)
+    # 例: 20250420_#3 霊能者に視てもらった_iS0CS_l6xwU
+    #     ^^^^^^^^_^^^^^^^^^^^^^^^^^^^^^^^_^^^^^^^^^^^
+    #     date     title                   youtube_id
+    middle = stem[9:-12] if len(stem) > 21 else ''
+    title = middle
     
     # エピソード番号を抽出
     episode_match = re.search(r'[#＃](\d+|[０-９]+)', title)
@@ -229,9 +232,10 @@ if __name__ == '__main__':
     import argparse
     
     parser = argparse.ArgumentParser(description='Chunk SRT files for semantic search')
-    parser.add_argument('--srt-dir', default='/app/data/transcripts/srt',
+    script_dir = Path(__file__).parent
+    parser.add_argument('--srt-dir', default=str(script_dir / '../data/transcripts/srt'),
                         help='Directory containing SRT files')
-    parser.add_argument('--output-dir', default='/app/data/chunks',
+    parser.add_argument('--output-dir', default=str(script_dir / '../data/chunks'),
                         help='Output directory for JSON files')
     parser.add_argument('--chunk-duration', type=float, default=30.0,
                         help='Target chunk duration in seconds')

@@ -71,11 +71,12 @@ def save_embeddings(chunks: list[dict], output_file: str):
 
 def main():
     import argparse
-    
+
+    script_dir = Path(__file__).parent
     parser = argparse.ArgumentParser(description='Generate embeddings for chunks')
-    parser.add_argument('--chunks-file', default='/app/data/chunks/chunks.json',
+    parser.add_argument('--chunks-file', default=str(script_dir / '../data/chunks/chunks.json'),
                         help='Input chunks JSON file')
-    parser.add_argument('--output-file', default='/app/data/embeddings/chunks_with_embeddings.json',
+    parser.add_argument('--output-file', default=str(script_dir / '../data/embeddings/chunks_with_embeddings.json'),
                         help='Output file with embeddings')
     parser.add_argument('--batch-size', type=int, default=32,
                         help='Batch size for embedding generation')
