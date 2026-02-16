@@ -143,33 +143,33 @@ function SearchContent() {
   };
 
   return (
-    <main className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="bg-white/95 rounded-2xl shadow-lg p-6 md:p-8">
+    <main className="mx-auto px-3 py-4 md:px-4 md:py-8 max-w-4xl">
+      <div className="bg-white/95 rounded-2xl shadow-lg px-4 py-5 md:p-8">
       {/* ヘッダー */}
-      <header className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-pokopea-navy mb-2">
+      <header className="text-center mb-5 md:mb-8">
+        <h1 className="text-xl md:text-3xl font-bold text-pokopea-navy mb-1 whitespace-nowrap">
           ぽこピーのゆめうつつのあの回
         </h1>
-        <p className="text-pokopea-gray">
+        <p className="text-sm md:text-base text-pokopea-gray">
           会話の内容や雰囲気から関連するシーンを検索できます
         </p>
       </header>
 
       {/* 検索フォーム */}
-      <form onSubmit={handleSearch} className="mb-8">
+      <form onSubmit={handleSearch} className="mb-5 md:mb-8">
         <div className="flex gap-2">
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="例: タクシーの話、ディズニーの話、おすすめのアニメ..."
-            className="flex-1 px-4 py-3 border border-pokopea-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-pokopea-pink focus:border-transparent text-lg"
+            placeholder="例: タクシーの話、おすすめのアニメ..."
+            className="flex-1 min-w-0 px-3 py-2.5 md:px-4 md:py-3 border border-pokopea-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-pokopea-pink focus:border-transparent text-base md:text-lg"
             disabled={isLoading}
           />
           <button
             type="submit"
             disabled={isLoading || !query.trim()}
-            className="px-6 py-3 bg-pokopea-pink text-white font-medium rounded-lg hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-pokopea-pink focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex-shrink-0 px-4 py-2.5 md:px-6 md:py-3 bg-pokopea-pink text-white font-medium rounded-lg hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-pokopea-pink focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isLoading ? '検索中...' : '検索'}
           </button>
@@ -185,7 +185,7 @@ function SearchContent() {
 
       {/* 検索結果メタ情報 */}
       {meta && !isLoading && (
-        <div className="mb-4 text-sm text-pokopea-gray">
+        <div className="mb-3 md:mb-4 text-xs md:text-sm text-pokopea-gray">
           「{meta.query}」の検索結果: {meta.resultCount}件
           <span className="ml-2">({meta.totalTimeMs}ms)</span>
         </div>
@@ -193,23 +193,23 @@ function SearchContent() {
 
       {/* 検索結果 */}
       {groupedResults.length > 0 && (
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
           {groupedResults.map((episode) => (
             <article
               key={episode.episode_id}
               className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden"
             >
               {/* エピソードヘッダー */}
-              <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-1 bg-pokopea-pink/20 text-pokopea-pink text-xs font-medium rounded">
+              <div className="px-3 py-2.5 md:px-4 md:py-3 bg-gray-50 border-b border-gray-200">
+                <div className="flex items-center gap-1.5 md:gap-2">
+                  <span className="flex-shrink-0 px-1.5 py-0.5 md:px-2 md:py-1 bg-pokopea-pink/20 text-pokopea-pink text-xs font-medium rounded">
                     {episode.episode_number ? `#${episode.episode_number}` : 'EP'}
                   </span>
-                  <h2 className="font-medium text-gray-800">
+                  <h2 className="font-medium text-gray-800 text-sm md:text-base truncate">
                     {episode.episode_title}
                   </h2>
-                  <span className="ml-auto text-sm text-gray-500">
-                    {episode.chunks.length}件のシーン
+                  <span className="ml-auto flex-shrink-0 text-xs md:text-sm text-gray-500">
+                    {episode.chunks.length}件
                   </span>
                 </div>
               </div>
@@ -219,17 +219,17 @@ function SearchContent() {
                 {episode.chunks.map((chunk) => (
                   <div
                     key={`${chunk.episode_id}-${chunk.chunk_index}`}
-                    className="p-4 hover:bg-gray-50 transition-colors"
+                    className="px-3 py-3 md:p-4 hover:bg-gray-50 transition-colors"
                   >
-                    <div className="flex items-start gap-4">
-                      <div className="flex-1">
+                    <div className="flex items-start gap-2.5 md:gap-4">
+                      <div className="flex-1 min-w-0">
                         {/* 文字起こしテキスト（ハイライト付き） */}
-                        <p className="text-gray-700 mb-2 line-clamp-3">
+                        <p className="text-sm md:text-base text-gray-700 mb-1.5 md:mb-2 line-clamp-3">
                           {highlightText(chunk.text, meta?.query || '')}
                         </p>
 
                         {/* メタ情報 */}
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <div className="flex items-center gap-3 md:gap-4 text-xs md:text-sm text-gray-500">
                           <span>
                             {formatTime(chunk.start_time)} - {formatTime(chunk.end_time)}
                           </span>
@@ -244,7 +244,7 @@ function SearchContent() {
                         href={getYouTubeUrl(chunk.episode_id, chunk.start_time)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-shrink-0 px-3 py-1.5 bg-pokopea-pink text-white text-sm font-medium rounded hover:brightness-110 transition-colors"
+                        className="flex-shrink-0 px-2.5 py-1 md:px-3 md:py-1.5 bg-pokopea-pink text-white text-xs md:text-sm font-medium rounded hover:brightness-110 transition-colors"
                       >
                         {formatTime(chunk.start_time)}
                       </a>
@@ -259,25 +259,25 @@ function SearchContent() {
 
       {/* 検索結果なし */}
       {!isLoading && meta && groupedResults.length === 0 && (
-        <div className="text-center py-12 text-gray-500">
-          <p className="text-lg mb-2">該当する結果が見つかりませんでした</p>
-          <p className="text-sm">別のキーワードで検索してみてください</p>
+        <div className="text-center py-8 md:py-12 text-gray-500">
+          <p className="text-base md:text-lg mb-2">該当する結果が見つかりませんでした</p>
+          <p className="text-xs md:text-sm">別のキーワードで検索してみてください</p>
         </div>
       )}
 
       {/* 初期状態 */}
       {!isLoading && !meta && groupedResults.length === 0 && (
-        <div className="text-center py-12 text-gray-400">
+        <div className="text-center py-8 md:py-12 text-gray-400">
           <p className="text-lg mb-4">🔍</p>
-          <p>検索キーワードを入力してください</p>
-          <p className="text-sm mt-2">
+          <p className="text-sm md:text-base">検索キーワードを入力してください</p>
+          <p className="text-xs md:text-sm mt-2">
             曖昧な言葉や話題でも検索できます
           </p>
         </div>
       )}
 
       {/* フッター */}
-      <footer className="mt-16 pt-8 border-t border-pokopea-gray/30 text-center text-sm text-pokopea-gray space-y-2">
+      <footer className="mt-8 pt-5 md:mt-16 md:pt-8 border-t border-pokopea-gray/30 text-center text-xs md:text-sm text-pokopea-gray space-y-1.5 md:space-y-2">
         <p>
           文字起こしデータの全文は公開・検索できません
         </p>
@@ -301,8 +301,8 @@ function SearchContent() {
 export default function Home() {
   return (
     <Suspense fallback={
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="bg-white/95 rounded-2xl shadow-lg p-6 md:p-8">
+      <main className="mx-auto px-3 py-4 md:px-4 md:py-8 max-w-4xl">
+        <div className="bg-white/95 rounded-2xl shadow-lg px-4 py-5 md:p-8">
           <div className="text-center py-12 text-pokopea-gray">
             読み込み中...
           </div>
