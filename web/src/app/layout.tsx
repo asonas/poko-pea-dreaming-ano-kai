@@ -4,6 +4,9 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'ぽこピーのゆめうつつのあの回',
   description: '『ぽこピーのゆめうつつ』のあの回どれだっけかな？のときに役に立つサイトです',
+  icons: {
+    icon: '/favicon.svg',
+  },
   openGraph: {
     title: 'ぽこピーのゆめうつつのあの回',
     description: '『ぽこピーのゆめうつつ』のあの回どれだっけかな？のときに役に立つサイトです',
