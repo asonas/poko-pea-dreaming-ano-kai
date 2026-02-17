@@ -6,6 +6,9 @@
     "onlyBuiltDependencies": [
       "sharp",
       "protobufjs"
+    ],
+    "ignoredBuiltDependencies": [
+      "esbuild"
     ]
   },
   "scripts": {
