@@ -2,7 +2,8 @@
 
 import { useState, FormEvent, useMemo, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { SearchResult } from '@/lib/supabase';
+import { SearchResult, Episode } from '@/lib/supabase';
+import EpisodeList from '@/components/EpisodeList';
 
 interface SearchResponse {
   results: SearchResult[];
@@ -87,6 +88,8 @@ function SearchContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [meta, setMeta] = useState<SearchResponse['meta'] | null>(null);
+  const [episodes, setEpisodes] = useState<Episode[]>([]);
+  const [isLoadingEpisodes, setIsLoadingEpisodes] = useState(true);
 
   const groupedResults = useMemo(() => groupByEpisode(results), [results]);
 
@@ -118,6 +121,24 @@ function SearchContent() {
     } finally {
       setIsLoading(false);
     }
+  }, []);
+
+  // エピソード一覧を取得
+  useEffect(() => {
+    async function fetchEpisodes() {
+      try {
+        const response = await fetch('/api/episodes');
+        if (response.ok) {
+          const data = await response.json();
+          setEpisodes(data.episodes);
+        }
+      } catch {
+        // エピソード取得失敗は無視（検索機能に影響しない）
+      } finally {
+        setIsLoadingEpisodes(false);
+      }
+    }
+    fetchEpisodes();
   }, []);
 
   // URLパラメータから初期検索
@@ -265,15 +286,9 @@ function SearchContent() {
         </div>
       )}
 
-      {/* 初期状態 */}
+      {/* 初期状態: エピソード一覧 */}
       {!isLoading && !meta && groupedResults.length === 0 && (
-        <div className="text-center py-8 md:py-12 text-gray-400">
-          <p className="text-lg mb-4">🔍</p>
-          <p className="text-sm md:text-base">検索キーワードを入力してください</p>
-          <p className="text-xs md:text-sm mt-2">
-            曖昧な言葉や話題でも検索できます
-          </p>
-        </div>
+        <EpisodeList episodes={episodes} isLoading={isLoadingEpisodes} />
       )}
 
       {/* フッター */}
