@@ -150,6 +150,14 @@ function SearchContent() {
     }
   }, [searchParams, executeSearch]);
 
+  const handleReset = () => {
+    setQuery('');
+    setResults([]);
+    setMeta(null);
+    setError(null);
+    router.push('/');
+  };
+
   const handleSearch = async (e: FormEvent) => {
     e.preventDefault();
 
@@ -169,7 +177,9 @@ function SearchContent() {
       {/* ヘッダー */}
       <header className="text-center mb-5 md:mb-8">
         <h1 className="text-xl md:text-3xl font-bold text-pokopea-navy mb-1 whitespace-nowrap">
-          ぽこピーのゆめうつつのあの回
+          <a href="/" onClick={(e) => { e.preventDefault(); handleReset(); }} className="hover:opacity-70 transition-opacity cursor-pointer">
+            ぽこピーのゆめうつつのあの回
+          </a>
         </h1>
         <p className="text-sm md:text-base text-pokopea-gray">
           会話の内容や雰囲気から関連するシーンを検索できます
