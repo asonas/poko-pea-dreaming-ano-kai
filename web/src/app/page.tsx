@@ -4,6 +4,7 @@ import { useState, FormEvent, useMemo, useEffect, useCallback, Suspense } from '
 import { useSearchParams, useRouter } from 'next/navigation';
 import { SearchResult, Episode } from '@/lib/supabase';
 import EpisodeList from '@/components/EpisodeList';
+import PodcastPlatforms from '@/components/PodcastPlatforms';
 
 interface SearchResponse {
   results: SearchResult[];
@@ -296,9 +297,12 @@ function SearchContent() {
         </div>
       )}
 
-      {/* 初期状態: エピソード一覧 */}
+      {/* 初期状態: ポッドキャストプラットフォーム + エピソード一覧 */}
       {!isLoading && !meta && groupedResults.length === 0 && (
-        <EpisodeList episodes={episodes} isLoading={isLoadingEpisodes} />
+        <>
+          <PodcastPlatforms />
+          <EpisodeList episodes={episodes} isLoading={isLoadingEpisodes} />
+        </>
       )}
 
       {/* フッター */}
