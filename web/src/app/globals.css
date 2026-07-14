@@ -2,8 +2,186 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* ブランド由来のトーン */
+  --navy: #213380;
+  --blue: #4a85d2;
+  --pink: #df8ac8;
+  --pink-deep: #c05ca4;
+  --yellow: #eee862;
+  --ink: #2a2f45;
+  --ink-soft: #616a8c;
+
+  /* 見出し: 丸ゴシックで「ゆめうつつ」のやわらかさを出す。
+     Apple 端末は OS のヒラギノ丸ゴ、その他はシステムゴシックにフォールバック */
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Hiragino Sans',
+    'Noto Sans CJK JP', sans-serif;
+  --font-display: 'Hiragino Maru Gothic ProN', 'Hiragino Maru Gothic Pro',
+    'ヒラギノ丸ゴ ProN W4', 'M PLUS Rounded 1c', var(--font-body);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  /* 固定の空が届かない領域（オーバースクロール等）の保険色 */
+  background-color: #3a63b8;
+}
+
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Hiragino Sans', 'Noto Sans CJK JP', sans-serif;
-  background: linear-gradient(180deg, #4A85D2 0%, #6BA3E8 100%);
+  font-family: var(--font-body);
+  color: var(--ink);
   min-height: 100vh;
+  background: transparent;
+}
+
+/* ───────── ゆめうつつ = まどろみの空 ───────── */
+/* 薄明のグラデーションを固定し、コンテンツがその上を流れる */
+.sky {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    /* 地平のほのかな光 */
+    radial-gradient(120% 80% at 50% 118%, rgba(238, 232, 98, 0.32) 0%, rgba(238, 232, 98, 0) 45%),
+    /* 明け方の雲（ピンク） */
+    radial-gradient(90% 60% at 80% 92%, rgba(223, 138, 200, 0.55) 0%, rgba(223, 138, 200, 0) 55%),
+    radial-gradient(70% 55% at 12% 80%, rgba(223, 138, 200, 0.35) 0%, rgba(223, 138, 200, 0) 55%),
+    /* 高い空の光（雲のにじみ） */
+    radial-gradient(60% 40% at 26% 14%, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 60%),
+    /* 空そのもの（上=夜の底 → 下=昼の青） */
+    linear-gradient(178deg, #26317a 0%, #3a63b8 30%, #4a85d2 55%, #7ba8e0 78%, #cbb6e0 100%);
+}
+
+/* 夢の質感（グレイン）。バンディングも抑える */
+.sky::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+/* ───────── すりガラスの検索コンソール（唯一の半透明マテリアル） ───────── */
+.console {
+  background: rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset,
+    0 14px 40px -14px rgba(33, 51, 128, 0.4);
+}
+
+/* ───────── 白のソリッド面（読むためのカード） ───────── */
+.surface {
+  background: #ffffff;
+  border: 1px solid rgba(33, 51, 128, 0.06);
+  box-shadow: 0 1px 2px rgba(33, 51, 128, 0.04), 0 10px 26px -14px rgba(33, 51, 128, 0.2);
+}
+
+/* 空の上に載る白文字。明るい帯（下部の淡ピンク）でも読めるよう影で縁取る */
+.on-sky {
+  text-shadow: 0 1px 3px rgba(20, 28, 64, 0.4);
+}
+
+/* エピソード番号バッジ */
+.ep-badge {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+  background: linear-gradient(160deg, rgba(223, 138, 200, 0.18), rgba(223, 138, 200, 0.08));
+  border: 1px solid rgba(192, 92, 164, 0.22);
+  color: var(--pink-deep);
+}
+
+/* タイムスタンプ等の数値は等幅で揃える */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+/* ハイライト（検索語） */
+.mark {
+  background: linear-gradient(180deg, transparent 58%, rgba(238, 232, 98, 0.7) 58%);
+  color: inherit;
+  padding: 0 0.1em;
+  border-radius: 2px;
+  font-weight: 600;
+}
+
+/* 類似度メーター */
+.meter {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(33, 51, 128, 0.1);
+  overflow: hidden;
+}
+.meter > i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--blue), var(--pink));
+}
+
+/* ───────── モーション ───────── */
+/* 読み込み時に静かにせり上がる */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.rise {
+  animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* 押下フィードバックは即時 */
+.press {
+  transition: transform 0.12s ease-out;
+}
+.press:active {
+  transform: scale(0.97);
+}
+
+/* フォーカスリング（キーボード可視） */
+.focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.85), 0 0 0 5px rgba(223, 138, 200, 0.65);
+}
+
+/* reduced-transparency: マテリアルを不透明に */
+@media (prefers-reduced-transparency: reduce) {
+  .console {
+    background: #fdfbff;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* reduced-motion: 動きはやめ、フェードのみ */
+@media (prefers-reduced-motion: reduce) {
+  .rise {
+    animation: none;
+  }
+  .press {
+    transition: none;
+  }
+  * {
+    scroll-behavior: auto !important;
+  }
+}
+
+/* コントラスト強: 面に明確な枠を与える */
+@media (prefers-contrast: more) {
+  .console {
+    background: #ffffff;
+    border-color: var(--navy);
+    backdrop-filter: none;
+  }
+  .surface {
+    border-color: rgba(33, 51, 128, 0.4);
+  }
 }

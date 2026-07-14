@@ -71,13 +71,34 @@ function highlightText(text: string, query: string): React.ReactNode {
     const isMatch = keywords.some(k => part.toLowerCase() === k.toLowerCase());
     if (isMatch) {
       return (
-        <mark key={i} className="bg-pokopea-yellow text-gray-900 px-0.5 rounded">
+        <mark key={i} className="mark">
           {part}
         </mark>
       );
     }
     return part;
   });
+}
+
+// セクション見出し
+function SectionLabel({ children, count }: { children: React.ReactNode; count?: string }) {
+  return (
+    <div className="flex items-center gap-2 mb-3">
+      <span className="w-1.5 h-1.5 rounded-full bg-pokopea-pink" />
+      <h2 className="on-sky text-sm font-bold text-white tracking-wide" style={{ fontFamily: 'var(--font-display)' }}>
+        {children}
+      </h2>
+      {count && <span className="on-sky text-xs text-white/80 tnum">{count}</span>}
+    </div>
+  );
+}
+
+function PlayGlyph() {
+  return (
+    <svg className="w-3 h-3" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
+      <path d="M3 2.2v7.6c0 .5.55.8.97.53l6-3.8a.63.63 0 000-1.06l-6-3.8A.63.63 0 003 2.2z" />
+    </svg>
+  );
 }
 
 function SearchContent() {
@@ -172,112 +193,145 @@ function SearchContent() {
     await executeSearch(query.trim());
   };
 
+  const showInitial = !isLoading && !meta && groupedResults.length === 0;
+
   return (
-    <main className="mx-auto px-3 py-4 md:px-4 md:py-8 max-w-4xl">
-      <div className="bg-white/95 rounded-2xl shadow-lg px-4 py-5 md:p-8">
-      {/* ヘッダー */}
-      <header className="text-center mb-5 md:mb-8">
-        <h1 className="text-xl md:text-3xl font-bold text-pokopea-navy mb-1 whitespace-nowrap">
-          <a href="/" onClick={(e) => { e.preventDefault(); handleReset(); }} className="hover:opacity-70 transition-opacity cursor-pointer">
+    <main className="mx-auto max-w-5xl px-4 pb-16">
+      {/* ヘッダー: 薄明の空に浮かぶ */}
+      <header className="pt-12 md:pt-16 pb-6 text-center rise">
+        <a
+          href="/"
+          onClick={(e) => { e.preventDefault(); handleReset(); }}
+          className="inline-flex items-center gap-1.5 mb-4 px-3 py-1 rounded-full bg-white/15 border border-white/25 text-white/90 text-xs md:text-sm backdrop-blur-sm focus-ring press cursor-pointer"
+        >
+          <span aria-hidden="true">☁︎</span> あの回、どれだっけ？
+        </a>
+        <h1
+          className="text-[1.5rem] leading-tight md:text-5xl font-bold text-white mb-2.5"
+          style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.01em', textShadow: '0 2px 22px rgba(20,28,64,0.5)' }}
+        >
+          <a
+            href="/"
+            onClick={(e) => { e.preventDefault(); handleReset(); }}
+            className="rounded-lg hover:opacity-80 transition-opacity focus-ring cursor-pointer"
+          >
             ぽこピーのゆめうつつのあの回
           </a>
         </h1>
-        <p className="text-sm md:text-base text-pokopea-gray">
-          会話の内容や雰囲気から関連するシーンを検索できます
+        <p className="on-sky text-sm md:text-base text-white/85 max-w-md mx-auto">
+          会話の内容や雰囲気から、関連するシーンを検索できます
         </p>
       </header>
 
-      {/* 検索フォーム */}
-      <form onSubmit={handleSearch} className="mb-5 md:mb-8">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="例: タクシーの話、おすすめのアニメ..."
-            className="flex-1 min-w-0 px-3 py-2.5 md:px-4 md:py-3 border border-pokopea-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-pokopea-pink focus:border-transparent text-base md:text-lg"
-            disabled={isLoading}
-          />
-          <button
-            type="submit"
-            disabled={isLoading || !query.trim()}
-            className="flex-shrink-0 px-4 py-2.5 md:px-6 md:py-3 bg-pokopea-pink text-white font-medium rounded-lg hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-pokopea-pink focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {isLoading ? '検索中...' : '検索'}
-          </button>
-        </div>
-      </form>
+      {/* 検索コンソール（メイン機能・全幅・スクロール追従） */}
+      <div className="sticky top-3 z-20 rise" style={{ animationDelay: '60ms' }}>
+        <form onSubmit={handleSearch} className="console rounded-[20px] p-2">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="例: タクシーの話、おすすめのアニメ…"
+              className="flex-1 min-w-0 px-4 py-3 bg-white/70 border border-white/60 rounded-2xl text-base md:text-lg text-ink placeholder:text-ink-soft/60 focus-ring focus:bg-white transition-colors"
+              disabled={isLoading}
+              aria-label="検索キーワード"
+            />
+            <button
+              type="submit"
+              disabled={isLoading || !query.trim()}
+              className="flex-shrink-0 px-5 md:px-7 py-3 bg-pokopea-pink-deep text-white font-bold rounded-2xl shadow-sm hover:brightness-105 focus-ring press disabled:opacity-45 disabled:cursor-not-allowed"
+              style={{ fontFamily: 'var(--font-display)' }}
+            >
+              {isLoading ? '…' : '検索'}
+            </button>
+          </div>
+        </form>
+      </div>
 
-      {/* エラー表示 */}
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
-          {error}
-        </div>
-      )}
+      {/* 2カラム: 左（配信を聴く）/ 右（配信一覧・検索結果） */}
+      <div className="md:flex md:gap-6 md:items-start mt-6">
+        {/* ── 左レール（配信を聴く） ── */}
+        <aside className="md:w-[340px] md:flex-shrink-0 rise" style={{ animationDelay: '120ms' }}>
+          <section>
+            <SectionLabel>配信を聴く</SectionLabel>
+            <PodcastPlatforms />
+          </section>
+        </aside>
 
-      {/* 検索結果メタ情報 */}
-      {meta && !isLoading && (
-        <div className="mb-3 md:mb-4 text-xs md:text-sm text-pokopea-gray">
-          「{meta.query}」の検索結果: {meta.resultCount}件
-          <span className="ml-2">({meta.totalTimeMs}ms)</span>
-        </div>
-      )}
+        {/* ── 右カラム（メインコンテンツ） ── */}
+        <div className="flex-1 min-w-0 mt-8 md:mt-0">
+          {/* エラー表示 */}
+          {error && (
+            <div className="surface rounded-2xl px-4 py-3.5 text-sm text-pokopea-pink-deep flex items-center gap-2">
+              <span aria-hidden="true">⚠︎</span> {error}。もう一度お試しください。
+            </div>
+          )}
 
-      {/* 検索結果 */}
-      {groupedResults.length > 0 && (
-        <div className="space-y-4 md:space-y-6">
-          {groupedResults.map((episode) => (
+          {/* 検索結果メタ情報 */}
+          {meta && !isLoading && (
+            <div className="on-sky mb-3 flex items-baseline gap-2 text-sm text-white">
+              <span style={{ fontFamily: 'var(--font-display)' }}>「{meta.query}」</span>
+              <span className="tnum">{meta.resultCount}件</span>
+              <span className="text-white/70 text-xs tnum ml-auto">{meta.totalTimeMs}ms</span>
+            </div>
+          )}
+
+          {/* 検索結果 */}
+          {groupedResults.length > 0 && (
+            <div className="space-y-4">
+              {groupedResults.map((episode, ei) => (
             <article
               key={episode.episode_id}
-              className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden"
+              className="surface rounded-2xl overflow-hidden rise"
+              style={{ animationDelay: `${ei * 60}ms` }}
             >
               {/* エピソードヘッダー */}
-              <div className="px-3 py-2.5 md:px-4 md:py-3 bg-gray-50 border-b border-gray-200">
-                <div className="flex items-center gap-1.5 md:gap-2">
-                  <span className="flex-shrink-0 px-1.5 py-0.5 md:px-2 md:py-1 bg-pokopea-pink/20 text-pokopea-pink text-xs font-medium rounded">
-                    {episode.episode_number ? `#${episode.episode_number}` : 'EP'}
-                  </span>
-                  <h2 className="font-medium text-gray-800 text-sm md:text-base truncate">
-                    {episode.episode_title}
-                  </h2>
-                  <span className="ml-auto flex-shrink-0 text-xs md:text-sm text-gray-500">
-                    {episode.chunks.length}件
-                  </span>
-                </div>
+              <div className="flex items-center gap-2.5 px-3.5 py-3 border-b border-[rgba(33,51,128,0.07)]">
+                <span className="flex-shrink-0 px-2 py-0.5 rounded-lg text-xs font-bold ep-badge">
+                  {episode.episode_number ? `#${episode.episode_number}` : 'EP'}
+                </span>
+                <h3 className="font-bold text-ink text-sm md:text-base truncate" style={{ fontFamily: 'var(--font-display)' }}>
+                  {episode.episode_title}
+                </h3>
+                <span className="ml-auto flex-shrink-0 text-xs text-ink-soft tnum">
+                  {episode.chunks.length}件
+                </span>
               </div>
 
               {/* チャンク一覧 */}
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y divide-[rgba(33,51,128,0.05)]">
                 {episode.chunks.map((chunk) => (
                   <div
                     key={`${chunk.episode_id}-${chunk.chunk_index}`}
-                    className="px-3 py-3 md:p-4 hover:bg-gray-50 transition-colors"
+                    className="px-3.5 py-3.5 hover:bg-[rgba(74,133,210,0.035)] transition-colors"
                   >
-                    <div className="flex items-start gap-2.5 md:gap-4">
-                      <div className="flex-1 min-w-0">
-                        {/* 文字起こしテキスト（ハイライト付き） */}
-                        <p className="text-sm md:text-base text-gray-700 mb-1.5 md:mb-2 line-clamp-3">
-                          {highlightText(chunk.text, meta?.query || '')}
-                        </p>
+                    <p className="text-sm md:text-[15px] leading-relaxed text-ink mb-2.5 line-clamp-3">
+                      {highlightText(chunk.text, meta?.query || '')}
+                    </p>
 
-                        {/* メタ情報 */}
-                        <div className="flex items-center gap-3 md:gap-4 text-xs md:text-sm text-gray-500">
-                          <span>
-                            {formatTime(chunk.start_time)} - {formatTime(chunk.end_time)}
-                          </span>
-                          <span>
-                            類似度: {(chunk.similarity * 100).toFixed(1)}%
-                          </span>
-                        </div>
+                    <div className="flex items-center gap-3">
+                      {/* 時刻 + 類似度メーター */}
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-xs text-ink-soft tnum whitespace-nowrap">
+                          {formatTime(chunk.start_time)}–{formatTime(chunk.end_time)}
+                        </span>
+                        <span className="meter w-14 md:w-20 flex-shrink-0" aria-hidden="true">
+                          <i style={{ width: `${Math.round(chunk.similarity * 100)}%` }} />
+                        </span>
+                        <span className="text-xs text-ink-soft/80 tnum whitespace-nowrap">
+                          {(chunk.similarity * 100).toFixed(0)}%
+                        </span>
                       </div>
 
-                      {/* YouTubeリンク */}
+                      {/* YouTube該当時刻へジャンプ */}
                       <a
                         href={getYouTubeUrl(chunk.episode_id, chunk.start_time)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-shrink-0 px-2.5 py-1 md:px-3 md:py-1.5 bg-pokopea-pink text-white text-xs md:text-sm font-medium rounded hover:brightness-110 transition-colors"
+                        className="ml-auto flex-shrink-0 inline-flex items-center gap-1.5 pl-2.5 pr-3 py-1.5 bg-pokopea-pink-deep text-white text-xs md:text-sm font-bold rounded-full shadow-sm hover:brightness-105 focus-ring press tnum"
+                        aria-label={`YouTubeの ${formatTime(chunk.start_time)} を開く`}
                       >
+                        <PlayGlyph />
                         {formatTime(chunk.start_time)}
                       </a>
                     </div>
@@ -289,40 +343,50 @@ function SearchContent() {
         </div>
       )}
 
-      {/* 検索結果なし */}
-      {!isLoading && meta && groupedResults.length === 0 && (
-        <div className="text-center py-8 md:py-12 text-gray-500">
-          <p className="text-base md:text-lg mb-2">該当する結果が見つかりませんでした</p>
-          <p className="text-xs md:text-sm">別のキーワードで検索してみてください</p>
+          {/* 検索中 */}
+          {isLoading && (
+            <div className="on-sky mt-4 text-center text-white rise">
+              <p className="text-sm" style={{ fontFamily: 'var(--font-display)' }}>ゆめのなかを探しています…</p>
+            </div>
+          )}
+
+          {/* 検索結果なし */}
+          {!isLoading && meta && groupedResults.length === 0 && (
+            <div className="surface rounded-2xl text-center py-10 px-4">
+              <p className="text-base font-bold text-ink mb-1.5" style={{ fontFamily: 'var(--font-display)' }}>
+                まだ見つかっていません
+              </p>
+              <p className="text-sm text-ink-soft">
+                言い回しを変えたり、雰囲気で検索してみてください
+              </p>
+            </div>
+          )}
+
+          {/* 初期状態: 配信一覧 */}
+          {showInitial && (
+            <section className="rise" style={{ animationDelay: '120ms' }}>
+              <SectionLabel count={episodes.length ? `${episodes.length}本` : undefined}>配信一覧</SectionLabel>
+              <EpisodeList episodes={episodes} isLoading={isLoadingEpisodes} />
+            </section>
+          )}
         </div>
-      )}
+      </div>
 
-      {/* 初期状態: ポッドキャストプラットフォーム + エピソード一覧 */}
-      {!isLoading && !meta && groupedResults.length === 0 && (
-        <>
-          <PodcastPlatforms />
-          <EpisodeList episodes={episodes} isLoading={isLoadingEpisodes} />
-        </>
-      )}
-
-      {/* フッター */}
-      <footer className="mt-8 pt-5 md:mt-16 md:pt-8 border-t border-pokopea-gray/30 text-center text-xs md:text-sm text-pokopea-gray space-y-1.5 md:space-y-2">
-        <p>
-          文字起こしデータの全文は公開・検索できません
-        </p>
+      {/* フッター（空の下側=明るい帯に載るため濃色でコントラストを確保） */}
+      <footer className="mt-14 pt-6 border-t border-[rgba(33,51,128,0.18)] text-center text-xs md:text-sm text-ink/75 space-y-1.5">
+        <p>ファンによる非公式の検索ツールです。文字起こしデータの全文は公開・検索できません</p>
         <p>
           お問い合わせ:
           <a
             href="https://x.com/asonas"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-pokopea-pink hover:underline ml-1"
+            className="text-pokopea-navy font-bold hover:underline ml-1 focus-ring rounded"
           >
             @asonas
           </a>
         </p>
       </footer>
-      </div>
     </main>
   );
 }
@@ -330,12 +394,8 @@ function SearchContent() {
 export default function Home() {
   return (
     <Suspense fallback={
-      <main className="mx-auto px-3 py-4 md:px-4 md:py-8 max-w-4xl">
-        <div className="bg-white/95 rounded-2xl shadow-lg px-4 py-5 md:p-8">
-          <div className="text-center py-12 text-pokopea-gray">
-            読み込み中...
-          </div>
-        </div>
+      <main className="mx-auto max-w-3xl px-4">
+        <div className="pt-20 text-center text-white/80">読み込み中…</div>
       </main>
     }>
       <SearchContent />
