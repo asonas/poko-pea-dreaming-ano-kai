@@ -128,7 +128,7 @@ describe('Home accessibility structure', () => {
 
     render(<Home />);
 
-    expect((await screen.findByRole('status')).textContent).toContain('ゆめのなかを探しています');
+    expect((await screen.findByRole('status')).textContent).toContain('検索しています');
     expect(screen.getAllByRole('status')).toHaveLength(1);
   });
 

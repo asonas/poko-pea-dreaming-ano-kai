@@ -338,7 +338,7 @@ function SearchContent() {
           {/* 検索中 */}
           {isLoading && (
             <div role="status" className="on-sky mt-4 text-center text-white rise">
-              <p className="text-sm" style={{ fontFamily: 'var(--font-display)' }}>ゆめのなかを探しています…</p>
+              <p className="text-sm" style={{ fontFamily: 'var(--font-display)' }}>検索しています…</p>
             </div>
           )}
 
