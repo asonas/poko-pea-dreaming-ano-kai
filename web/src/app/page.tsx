@@ -81,11 +81,11 @@ function highlightText(text: string, query: string): React.ReactNode {
 }
 
 // セクション見出し
-function SectionLabel({ children, count }: { children: React.ReactNode; count?: string }) {
+function SectionLabel({ children, count, id }: { children: React.ReactNode; count?: string; id?: string }) {
   return (
     <div className="flex items-center gap-2 mb-3">
       <span className="w-1.5 h-1.5 rounded-full bg-pokopea-pink" />
-      <h2 className="on-sky text-sm font-bold text-white tracking-wide" style={{ fontFamily: 'var(--font-display)' }}>
+      <h2 id={id} className="on-sky text-sm font-bold text-white tracking-wide" style={{ fontFamily: 'var(--font-display)' }}>
         {children}
       </h2>
       {count && <span className="on-sky text-xs text-white/80 tnum">{count}</span>}
@@ -248,29 +248,21 @@ function SearchContent() {
         </form>
       </div>
 
-      {/* 2カラム: 左（配信を聴く）/ 右（配信一覧・検索結果） */}
-      <div className="md:flex md:gap-6 md:items-start mt-6">
-        {/* ── 左レール（配信を聴く） ── */}
-        <aside className="md:w-[340px] md:flex-shrink-0 rise" style={{ animationDelay: '120ms' }}>
-          <section>
-            <SectionLabel>配信を聴く</SectionLabel>
-            <PodcastPlatforms />
-          </section>
-        </aside>
-
-        {/* ── 右カラム（メインコンテンツ） ── */}
-        <div className="flex-1 min-w-0 mt-8 md:mt-0">
+      {/* DOMでは主コンテンツを先にし、デスクトップだけ配信リンクを左に配置 */}
+      <div className="mt-6 grid items-start gap-y-8 md:grid-cols-[340px_minmax(0,1fr)] md:gap-6">
+        <div className="min-w-0 md:col-start-2 md:row-start-1">
           {/* エラー表示 */}
           {error && (
-            <div className="surface rounded-2xl px-4 py-3.5 text-sm text-pokopea-pink-deep flex items-center gap-2">
+            <div role="alert" className="surface rounded-2xl px-4 py-3.5 text-sm text-pokopea-pink-deep flex items-center gap-2">
               <span aria-hidden="true">⚠︎</span> {error}。もう一度お試しください。
             </div>
           )}
 
           {/* 検索結果メタ情報 */}
           {meta && !isLoading && (
-            <div className="on-sky mb-3 flex items-baseline gap-2 text-sm text-white">
-              <span style={{ fontFamily: 'var(--font-display)' }}>「{meta.query}」</span>
+            <div role={groupedResults.length > 0 ? 'status' : undefined} className="on-sky mb-3 flex items-baseline gap-2 text-sm text-white">
+              <h2 className="font-bold" style={{ fontFamily: 'var(--font-display)' }}>検索結果</h2>
+              <span>「{meta.query}」</span>
               <span className="tnum">{meta.resultCount}件</span>
               <span className="text-white/70 text-xs tnum ml-auto">{meta.totalTimeMs}ms</span>
             </div>
@@ -345,14 +337,14 @@ function SearchContent() {
 
           {/* 検索中 */}
           {isLoading && (
-            <div className="on-sky mt-4 text-center text-white rise">
+            <div role="status" className="on-sky mt-4 text-center text-white rise">
               <p className="text-sm" style={{ fontFamily: 'var(--font-display)' }}>ゆめのなかを探しています…</p>
             </div>
           )}
 
           {/* 検索結果なし */}
           {!isLoading && meta && groupedResults.length === 0 && (
-            <div className="surface rounded-2xl text-center py-10 px-4">
+            <div role="status" className="surface rounded-2xl text-center py-10 px-4">
               <p className="text-base font-bold text-ink mb-1.5" style={{ fontFamily: 'var(--font-display)' }}>
                 まだ見つかっていません
               </p>
@@ -364,12 +356,21 @@ function SearchContent() {
 
           {/* 初期状態: 配信一覧 */}
           {showInitial && (
-            <section className="rise" style={{ animationDelay: '120ms' }}>
-              <SectionLabel count={episodes.length ? `${episodes.length}本` : undefined}>配信一覧</SectionLabel>
+            <section aria-labelledby="episode-list-heading" className="rise" style={{ animationDelay: '120ms' }}>
+              <SectionLabel id="episode-list-heading" count={episodes.length ? `${episodes.length}本` : undefined}>配信一覧</SectionLabel>
               <EpisodeList episodes={episodes} isLoading={isLoadingEpisodes} />
             </section>
           )}
         </div>
+
+        <aside
+          aria-labelledby="podcast-platforms-heading"
+          className="rise md:col-start-1 md:row-start-1"
+          style={{ animationDelay: '120ms' }}
+        >
+          <SectionLabel id="podcast-platforms-heading">配信を聴く</SectionLabel>
+          <PodcastPlatforms />
+        </aside>
       </div>
 
       {/* フッター（空の下側=明るい帯に載るため濃色でコントラストを確保） */}

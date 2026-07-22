@@ -25,6 +25,7 @@
 - Create: `mise.toml`
 - Modify: `web/package.json`
 - Modify: `web/pnpm-lock.yaml`
+- Create: `web/pnpm-workspace.yaml`
 
 **Interfaces:**
 - Consumes: installed `mise` executable
@@ -37,8 +38,10 @@ Create `mise.toml`:
 ```toml
 [tools]
 node = "24.18.0"
-pnpm = "11.15.1"
+"npm:pnpm" = "11.15.1"
 ```
+
+The explicit npm backend avoids the stale aqua asset mapping in mise 2025.12.12.
 
 - [ ] **Step 2: Install and verify the pinned tools**
 
@@ -58,6 +61,15 @@ Add this top-level field to `web/package.json`:
 
 ```json
 "packageManager": "pnpm@11.15.1"
+```
+
+Move the existing build-script policy from `package.json` to `web/pnpm-workspace.yaml`, using the pnpm 11 setting:
+
+```yaml
+allowBuilds:
+  esbuild: false
+  protobufjs: true
+  sharp: true
 ```
 
 Run:
@@ -130,7 +142,7 @@ expect((await screen.findByRole('alert')).textContent).toContain('検索に失�
 Run:
 
 ```sh
-mise exec -- pnpm --dir web vitest run src/app/page.test.tsx
+mise exec -- pnpm --dir web exec vitest run src/app/page.test.tsx
 ```
 
 Expected: FAIL because the primary region follows the complementary region, the results `h2` is absent, and live-region roles are absent.
@@ -148,7 +160,7 @@ expect(contrastRatio(actionColor, '#ffffff')).toBeGreaterThanOrEqual(4.5);
 Run:
 
 ```sh
-mise exec -- pnpm --dir web vitest run src/app/globals.test.ts
+mise exec -- pnpm --dir web exec vitest run src/app/globals.test.ts
 ```
 
 Expected: FAIL with the current ratio near 3.96:1.
@@ -200,7 +212,7 @@ When search metadata exists, render a labelled `section` with a visible `h2` nam
 Run:
 
 ```sh
-mise exec -- pnpm --dir web vitest run src/app/page.test.tsx
+mise exec -- pnpm --dir web exec vitest run src/app/page.test.tsx
 ```
 
 Expected: DOM-order and heading assertions pass; status and alert assertions still fail until Task 4.
@@ -227,7 +239,7 @@ Add `role="status"` to the visible loading message, result metadata, and empty-r
 Run:
 
 ```sh
-mise exec -- pnpm --dir web vitest run src/app/page.test.tsx
+mise exec -- pnpm --dir web exec vitest run src/app/page.test.tsx
 ```
 
 Expected: all page semantics tests pass.
@@ -250,7 +262,7 @@ Replace `--pink-deep: #c05ca4` with a visually related darker pink whose calcula
 Run:
 
 ```sh
-mise exec -- pnpm --dir web vitest run src/app/globals.test.ts
+mise exec -- pnpm --dir web exec vitest run src/app/globals.test.ts
 ```
 
 Expected: the measured contrast ratio is at least 4.5:1.
