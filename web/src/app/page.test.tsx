@@ -63,6 +63,19 @@ describe('Home accessibility structure', () => {
     expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
+  it('binds accessible contrast surfaces to labels and the search input', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => jsonResponse({ episodes: [episode] })));
+
+    render(<Home />);
+
+    const listHeading = await screen.findByRole('heading', { level: 2, name: '配信一覧' });
+    const searchInput = screen.getByRole('textbox', { name: '検索キーワード' });
+
+    expect(listHeading.parentElement?.classList.contains('section-label')).toBe(true);
+    expect(listHeading.classList.contains('text-white')).toBe(true);
+    expect(searchInput.classList.contains('search-input')).toBe(true);
+  });
+
   it('exposes result headings and count as a status message', async () => {
     navigation.searchParams = new URLSearchParams('q=テスト');
     vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {

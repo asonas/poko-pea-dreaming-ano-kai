@@ -29,6 +29,16 @@ function contrastRatio(first: string, second: string): number {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
+function colorToken(css: string, name: string): string {
+  const value = css.match(new RegExp(`--${name}:\\s*(#[\\da-f]{6})`, 'i'))?.[1];
+
+  if (!value) {
+    throw new Error(`Missing color token: --${name}`);
+  }
+
+  return value;
+}
+
 describe('action color', () => {
   it('meets WCAG AA contrast against white normal-size text', () => {
     const css = readFileSync(new URL('./globals.css', import.meta.url), 'utf8');
@@ -36,5 +46,22 @@ describe('action color', () => {
 
     expect(actionColor).toBeDefined();
     expect(contrastRatio(actionColor!, '#ffffff')).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+describe('text surfaces', () => {
+  it('gives section labels an opaque AA background', () => {
+    const css = readFileSync(new URL('./globals.css', import.meta.url), 'utf8');
+
+    expect(css).toMatch(/\.section-label\s*{[^}]*background:\s*var\(--navy\)/);
+    expect(contrastRatio(colorToken(css, 'navy'), '#ffffff')).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('gives the search placeholder an opaque AA surface', () => {
+    const css = readFileSync(new URL('./globals.css', import.meta.url), 'utf8');
+
+    expect(css).toMatch(/\.search-input\s*{[^}]*background:\s*#ffffff/);
+    expect(css).toMatch(/\.search-input::placeholder\s*{[^}]*color:\s*var\(--ink-soft\)[^}]*opacity:\s*1/);
+    expect(contrastRatio(colorToken(css, 'ink-soft'), '#ffffff')).toBeGreaterThanOrEqual(4.5);
   });
 });

@@ -83,7 +83,7 @@ function highlightText(text: string, query: string): React.ReactNode {
 // セクション見出し
 function SectionLabel({ children, count, id }: { children: React.ReactNode; count?: string; id?: string }) {
   return (
-    <div className="flex items-center gap-2 mb-3">
+    <div className="section-label flex items-center gap-2 mb-3">
       <span className="w-1.5 h-1.5 rounded-full bg-pokopea-pink" />
       <h2 id={id} className="on-sky text-sm font-bold text-white tracking-wide" style={{ fontFamily: 'var(--font-display)' }}>
         {children}
@@ -232,7 +232,7 @@ function SearchContent() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="例: タクシーの話、おすすめのアニメ…"
-              className="flex-1 min-w-0 px-4 py-3 bg-white/70 border border-white/60 rounded-2xl text-base md:text-lg text-ink placeholder:text-ink-soft/60 focus-ring focus:bg-white transition-colors"
+              className="search-input flex-1 min-w-0 px-4 py-3 border border-white/60 rounded-2xl text-base md:text-lg text-ink focus-ring transition-colors"
               disabled={isLoading}
               aria-label="検索キーワード"
             />

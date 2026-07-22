@@ -84,6 +84,23 @@ body {
   text-shadow: 0 1px 3px rgba(20, 28, 64, 0.4);
 }
 
+/* 固定背景の明暗に左右されないセクション見出し */
+.section-label {
+  width: fit-content;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  background: var(--navy);
+}
+
+/* 入力例も通常テキストと同じコントラストを保つ */
+.search-input {
+  background: #ffffff;
+}
+.search-input::placeholder {
+  color: var(--ink-soft);
+  opacity: 1;
+}
+
 /* エピソード番号バッジ */
 .ep-badge {
   font-variant-numeric: tabular-nums;
