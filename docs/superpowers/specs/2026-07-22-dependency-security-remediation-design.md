@@ -2,7 +2,7 @@
 
 ## Goal
 
-Remove all vulnerabilities reported by `pnpm audit` while preserving the podcast search behavior and the current visual design.
+Remove vulnerabilities through maintained dependency upgrades while preserving the podcast search behavior and visual design. Do not bypass dependency constraints with package overrides.
 
 ## Current Risk
 
@@ -18,11 +18,12 @@ Update vulnerable direct dependencies to their current stable release lines:
 - Supabase JS 2.110.x;
 - Vitest 4.1.x;
 - Transformers.js 4.2.x under the maintained `@huggingface/transformers` package name;
-- matching React and Node.js type packages.
+- Tailwind CSS 4.x and its dedicated PostCSS plugin;
+- TypeScript 7.x and matching React and Node.js type packages.
 
-Keep Tailwind CSS 3 and TypeScript 5 because their major upgrades are unrelated to the audit findings and would expand the migration surface. Patch and minor updates required by the dependency resolver are allowed.
+Use the newest stable versions admitted by the configured pnpm minimum-release-age policy. Do not add package-version exclusions merely to install a release published too recently. Patch and minor updates required by the dependency resolver are allowed.
 
-Do not use package overrides to force incompatible transitive versions. Replace or update the owning direct dependency instead.
+Do not use package overrides to force transitive versions. Replace or update the owning direct dependency when a maintained release is available. Record findings that remain because the latest eligible owner has not yet adopted a fixed transitive dependency.
 
 ## Transformers Migration
 
@@ -38,6 +39,12 @@ Apply the official Next.js 16 migration requirements that affect this repository
 
 React 19 compatibility is verified through component tests, TypeScript checking, and a production build. Test infrastructure may be adjusted only where React 19 changes supported test behavior.
 
+## Tailwind CSS Migration
+
+Move from Tailwind CSS 3 to 4 using the official PostCSS integration. Replace the former Tailwind PostCSS plugin and Autoprefixer with `@tailwindcss/postcss`, migrate global directives and theme tokens to the supported CSS-first form, and remove configuration that is no longer used.
+
+Preserve all existing colors, typography, shadows, responsive layouts, contrast fixes, motion preferences, and increased-contrast behavior. Tailwind CSS 4 sets the browser floor to Safari 16.4, Chrome 111, and Firefox 128.
+
 ## Verification
 
 Use the repository's pinned Node.js 24.18.0 and pnpm 11.15.1 toolchain. Completion requires all of the following on the updated lockfile:
@@ -45,11 +52,12 @@ Use the repository's pinned Node.js 24.18.0 and pnpm 11.15.1 toolchain. Completi
 1. The complete Vitest suite passes.
 2. TypeScript checking passes with no errors.
 3. The Next.js production build succeeds.
-4. `pnpm audit` reports no known vulnerabilities and exits successfully.
-5. `git diff --check` reports no whitespace errors.
+4. `pnpm audit --audit-level critical` exits successfully with zero critical findings.
+5. Every remaining lower-severity finding is owned by a current direct dependency, documented with its dependency path and fixed-version status, and cannot be removed through a normal direct update.
+6. `git diff --check` reports no whitespace errors.
 
-If the latest compatible direct dependencies still contain a vulnerable transitive dependency, investigate the owning package and use a maintained replacement. Do not suppress audit findings.
+The unfiltered `pnpm audit` output remains visible in verification. Findings are not suppressed or ignored; only the CI failure threshold is set to critical while upstream packages catch up.
 
 ## Scope
 
-This work does not redesign the interface, change search ranking, regenerate stored embeddings, migrate Tailwind CSS, migrate TypeScript to version 7, or add new application features.
+This work does not redesign the interface, change search ranking, regenerate stored embeddings, replace the application framework, or add new application features.
