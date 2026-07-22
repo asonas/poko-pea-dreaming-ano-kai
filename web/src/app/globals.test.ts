@@ -38,3 +38,18 @@ describe('action color', () => {
     expect(contrastRatio(actionColor!, '#ffffff')).toBeGreaterThanOrEqual(4.5);
   });
 });
+
+describe('Tailwind theme', () => {
+  it.each([
+    '--color-pokopea-pink-deep',
+    '--color-pokopea-navy',
+    '--color-ink',
+    '--color-ink-soft',
+    '--font-display',
+    '--shadow-card-hover',
+  ])('defines %s in the CSS theme', (token) => {
+    const css = readFileSync(new URL('./globals.css', import.meta.url), 'utf8');
+
+    expect(css).toContain(`${token}:`);
+  });
+});
