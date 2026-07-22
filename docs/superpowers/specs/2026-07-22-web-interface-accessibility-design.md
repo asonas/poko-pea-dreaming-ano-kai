@@ -32,6 +32,10 @@ Search progress, result counts, and empty results are exposed through a polite s
 
 The action-background pink is darkened enough for white normal-size text to meet WCAG 2.2 AA contrast of at least 4.5:1. Decorative brand pink can remain unchanged. Existing reduced-motion, reduced-transparency, increased-contrast, focus-ring, and pressed-state behavior is preserved.
 
+Section labels must remain readable across the full fixed sky gradient while the page scrolls. Give each label an opaque navy backing instead of relying on a text shadow over the variable background. Keep the pink dot as a decorative accent and preserve the compact label treatment.
+
+The search field uses an opaque white input surface and an opaque `--ink-soft` placeholder. This keeps the placeholder at WCAG 2.2 AA contrast without changing the surrounding translucent console material.
+
 ## Testing
 
 Add the minimum DOM testing dependencies and configuration needed for React component tests. Tests will verify:
@@ -39,7 +43,9 @@ Add the minimum DOM testing dependencies and configuration needed for React comp
 - primary content precedes podcast embeds in DOM order;
 - search results have an `h2` with episode headings below it;
 - loading, empty, and result-count states use `role="status"`, while errors use `role="alert"`;
-- the action color token meets a 4.5:1 contrast threshold.
+- the action color token meets a 4.5:1 contrast threshold;
+- section-label and placeholder foreground/background pairs meet a 4.5:1 contrast threshold;
+- the rendered labels remain readable at mobile and desktop widths after scrolling across the lightest part of the fixed background.
 
 Run the complete Vitest suite, TypeScript checking, and the Next.js production build using the pinned `mise` toolchain. Inspect the resulting diff, including any lockfile changes introduced by pnpm 11.
 
