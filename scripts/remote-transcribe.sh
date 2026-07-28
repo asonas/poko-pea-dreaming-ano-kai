@@ -92,9 +92,25 @@ for f in "${NEW_FILES[@]}"; do
 done
 echo ""
 
-# リモートディレクトリ作成
-info "Setting up remote directory..."
-ssh ${SSH_OPTS} "${REMOTE}" "mkdir -p ${REMOTE_AUDIO_DIR} ${REMOTE_TRANSCRIPT_DIR}/srt"
+# リモートプロジェクトを最新のmainへ同期
+info "Synchronizing remote project..."
+ssh ${SSH_OPTS} "${REMOTE}" bash -s -- "${REMOTE_PROJECT_DIR}" <<'REMOTE_SYNC'
+set -euo pipefail
+remote_project_dir="$1"
+cd "$remote_project_dir"
+git pull --ff-only origin main
+
+for required_file in Dockerfile docker-compose.yml scripts/transcribe.py; do
+    if [[ ! -f "$required_file" ]]; then
+        echo "Required remote runtime file not found: $required_file" >&2
+        exit 1
+    fi
+done
+
+mkdir -p data/audio data/transcripts/txt data/transcripts/srt
+docker compose config --quiet
+docker compose build whisper
+REMOTE_SYNC
 
 # 音声ファイルを転送
 info "Uploading audio files..."
@@ -109,15 +125,19 @@ echo ""
 info "Running Whisper on remote server via Docker Compose..."
 WHISPER_MODEL="${WHISPER_MODEL:-large}"
 
-ssh ${SSH_OPTS} "${REMOTE}" bash <<EOF
+ssh ${SSH_OPTS} "${REMOTE}" bash -s -- \
+    "${REMOTE_PROJECT_DIR}" "${WHISPER_MODEL}" <<'REMOTE_TRANSCRIBE'
 set -euo pipefail
-cd ${REMOTE_PROJECT_DIR}
+remote_project_dir="$1"
+whisper_model="$2"
+cd "$remote_project_dir"
 
-echo "Whisper model: ${WHISPER_MODEL}"
+echo "Whisper model: ${whisper_model}"
 echo ""
 
-docker compose run --rm whisper python /app/scripts/transcribe.py
-EOF
+WHISPER_MODEL="$whisper_model" \
+    docker compose run --rm whisper python /app/scripts/transcribe.py
+REMOTE_TRANSCRIBE
 
 success "Remote transcription complete"
 echo ""
