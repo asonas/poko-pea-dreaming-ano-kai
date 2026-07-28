@@ -94,7 +94,7 @@ echo ""
 
 # リモートプロジェクトを最新のmainへ同期
 info "Synchronizing remote project..."
-ssh ${SSH_OPTS} "${REMOTE}" bash -s -- "${REMOTE_PROJECT_DIR}" <<'REMOTE_SYNC'
+ssh -A ${SSH_OPTS} "${REMOTE}" bash -s -- "${REMOTE_PROJECT_DIR}" <<'REMOTE_SYNC'
 set -euo pipefail
 remote_project_dir="$1"
 cd "$remote_project_dir"

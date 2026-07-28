@@ -1,4 +1,5 @@
 import os
+import shlex
 import shutil
 import subprocess
 import tempfile
@@ -19,6 +20,7 @@ class RemoteTranscribeTest(unittest.TestCase):
         self.remote_project = self.root / "remote-project"
         self.fake_bin = self.root / "fake-bin"
         self.command_log = self.root / "commands.log"
+        self.ssh_log = self.root / "ssh.log"
 
         (self.local_project / "scripts").mkdir(parents=True)
         (self.local_project / "data" / "audio").mkdir(parents=True)
@@ -41,6 +43,9 @@ class RemoteTranscribeTest(unittest.TestCase):
             import sys
 
             arguments = sys.argv[1:]
+            with open(os.environ["SSH_LOG"], "a", encoding="utf-8") as log:
+                log.write(" ".join(arguments) + "\\n")
+
             if "bash" not in arguments:
                 raise SystemExit(0)
 
@@ -102,6 +107,7 @@ class RemoteTranscribeTest(unittest.TestCase):
                 "REMOTE_PORT": "2222",
                 "REMOTE_PROJECT_DIR": str(self.remote_project),
                 "REMOTE_USER": "asonas",
+                "SSH_LOG": str(self.ssh_log),
                 "WHISPER_MODEL": "medium",
             }
         )
@@ -116,6 +122,9 @@ class RemoteTranscribeTest(unittest.TestCase):
         if not self.command_log.exists():
             return ""
         return self.command_log.read_text(encoding="utf-8")
+
+    def logged_ssh_connections(self):
+        return self.ssh_log.read_text(encoding="utf-8").splitlines()
 
     def create_remote_runtime(self, *, include_compose=True):
         (self.remote_project / "Dockerfile").write_text(
@@ -179,3 +188,14 @@ class RemoteTranscribeTest(unittest.TestCase):
         )
         self.assertTrue(commands[5].startswith("rsync "))
         self.assertIn("/srt/*.srt", commands[5])
+
+    def test_forwards_agent_only_for_git_sync(self):
+        self.create_remote_runtime()
+
+        result = self.run_script()
+
+        self.assertEqual(0, result.returncode, result.stderr)
+        connections = self.logged_ssh_connections()
+        self.assertEqual(2, len(connections))
+        self.assertIn("-A", shlex.split(connections[0]))
+        self.assertNotIn("-A", shlex.split(connections[1]))
