@@ -1,8 +1,10 @@
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { env, pipeline } from '@huggingface/transformers';
 import type { FeatureExtractionPipeline } from '@huggingface/transformers';
 
 // モデルのキャッシュを有効化
-env.cacheDir = './.cache';
+env.cacheDir = join(tmpdir(), 'transformers-cache');
 env.allowLocalModels = false;
 
 // モデル名（Pythonスクリプトと同じモデルを使用）

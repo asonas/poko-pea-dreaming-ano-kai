@@ -1,3 +1,5 @@
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const transformers = vi.hoisted(() => {
@@ -41,7 +43,7 @@ describe('generateQueryEmbedding', () => {
       normalize: true,
     });
     expect(result).toEqual([0.25, -0.5]);
-    expect(transformers.env.cacheDir).toBe('./.cache');
+    expect(transformers.env.cacheDir).toBe(join(tmpdir(), 'transformers-cache'));
     expect(transformers.env.allowLocalModels).toBe(false);
   });
 });
