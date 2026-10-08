@@ -61,36 +61,7 @@ info "Local audio: ${LOCAL_AUDIO_DIR}"
 info "Local transcripts: ${LOCAL_TRANSCRIPT_DIR}"
 echo ""
 
-# ローカルディレクトリ確認
-if [[ ! -d "${LOCAL_AUDIO_DIR}" ]]; then
-    error "Audio directory not found: ${LOCAL_AUDIO_DIR}"
-    exit 1
-fi
-
-# 未処理の音声ファイルを検出
-info "Checking for new audio files..."
 mkdir -p "${LOCAL_TRANSCRIPT_DIR}/srt"
-
-NEW_FILES=()
-for audio_file in "${LOCAL_AUDIO_DIR}"/*.mp3; do
-    [[ -f "$audio_file" ]] || continue
-    basename=$(basename "$audio_file" .mp3)
-    srt_file="${LOCAL_TRANSCRIPT_DIR}/srt/${basename}.srt"
-    if [[ ! -f "$srt_file" ]]; then
-        NEW_FILES+=("$audio_file")
-    fi
-done
-
-if [[ ${#NEW_FILES[@]} -eq 0 ]]; then
-    success "No new files to transcribe"
-    exit 0
-fi
-
-info "Found ${#NEW_FILES[@]} new file(s) to transcribe:"
-for f in "${NEW_FILES[@]}"; do
-    echo "  - $(basename "$f")"
-done
-echo ""
 
 # リモートプロジェクトを最新のmainへ同期
 info "Synchronizing remote project..."
@@ -100,7 +71,7 @@ remote_project_dir="$1"
 cd "$remote_project_dir"
 git pull --ff-only origin main
 
-for required_file in Dockerfile docker-compose.yml scripts/transcribe.py; do
+for required_file in Dockerfile docker-compose.yml scripts/transcribe.py scripts/download.sh; do
     if [[ ! -f "$required_file" ]]; then
         echo "Required remote runtime file not found: $required_file" >&2
         exit 1
@@ -112,14 +83,13 @@ docker compose config --quiet
 docker compose build whisper
 REMOTE_SYNC
 
-# 音声ファイルを転送
-info "Uploading audio files..."
-for audio_file in "${NEW_FILES[@]}"; do
-    info "  Uploading: $(basename "$audio_file")"
-    rsync -avz --progress -e "${RSYNC_SSH}" "$audio_file" "${REMOTE}:${REMOTE_AUDIO_DIR}/"
-done
-success "Upload complete"
-echo ""
+# 既存のローカル音源と履歴を引き継ぎ、リモートの取得済みデータを保護する。
+if [[ -d "${LOCAL_AUDIO_DIR}" ]]; then
+    rsync -av --ignore-existing -e "${RSYNC_SSH}" "${LOCAL_AUDIO_DIR}/" "${REMOTE}:${REMOTE_AUDIO_DIR}/"
+fi
+if [[ -f "${PROJECT_DIR}/data/downloaded.txt" ]]; then
+    rsync -av -e "${RSYNC_SSH}" "${PROJECT_DIR}/data/downloaded.txt" "${REMOTE}:${REMOTE_PROJECT_DIR}/data/downloaded.local.txt"
+fi
 
 # リモートでWhisperを実行（Docker Compose経由）
 info "Running Whisper on remote server via Docker Compose..."
@@ -135,6 +105,19 @@ cd "$remote_project_dir"
 echo "Whisper model: ${whisper_model}"
 echo ""
 
+if [[ -f data/downloaded.local.txt ]]; then
+    touch data/downloaded.txt
+    cat data/downloaded.txt data/downloaded.local.txt | sort -u > data/downloaded.merged.txt
+    mv data/downloaded.merged.txt data/downloaded.txt
+    rm data/downloaded.local.txt
+fi
+
+docker compose run --rm whisper bash /app/scripts/download.sh
+if ! compgen -G "data/audio/*.mp3" > /dev/null; then
+    echo "No audio files to transcribe"
+    exit 0
+fi
+
 WHISPER_MODEL="$whisper_model" \
     docker compose run --rm whisper python /app/scripts/transcribe.py
 REMOTE_TRANSCRIBE
@@ -144,7 +127,7 @@ echo ""
 
 # 結果をダウンロード
 info "Downloading transcripts..."
-rsync -avz --progress -e "${RSYNC_SSH}" "${REMOTE}:${REMOTE_TRANSCRIPT_DIR}/srt/*.srt" "${LOCAL_TRANSCRIPT_DIR}/srt/"
+rsync -avz --progress -e "${RSYNC_SSH}" "${REMOTE}:${REMOTE_TRANSCRIPT_DIR}/srt/" "${LOCAL_TRANSCRIPT_DIR}/srt/"
 success "Download complete"
 
 echo ""

@@ -18,7 +18,7 @@ RUN python -m pip install --upgrade pip \
         torchvision==0.21.0 \
         torchaudio==2.6.0 \
         --index-url https://download.pytorch.org/whl/cu124 \
-    && python -m pip install openai-whisper==20250625
+    && python -m pip install openai-whisper==20250625 yt-dlp
 
 WORKDIR /app
 

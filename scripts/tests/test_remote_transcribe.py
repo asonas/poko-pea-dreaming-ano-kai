@@ -76,6 +76,10 @@ class RemoteTranscribeTest(unittest.TestCase):
             printf 'WHISPER_MODEL=%s docker' "${WHISPER_MODEL:-}" >> "$COMMAND_LOG"
             printf ' %s' "$@" >> "$COMMAND_LOG"
             printf '\\n' >> "$COMMAND_LOG"
+            if [[ "$*" == *download.sh* ]]; then
+                [[ "${FAKE_DOWNLOAD_EXIT:-0}" == 0 ]] || exit "$FAKE_DOWNLOAD_EXIT"
+                touch data/audio/downloaded.mp3
+            fi
             """,
         )
         self.write_executable(
@@ -96,12 +100,13 @@ class RemoteTranscribeTest(unittest.TestCase):
         )
         executable.chmod(0o755)
 
-    def run_script(self, *, git_exit="0"):
+    def run_script(self, *, git_exit="0", download_exit="0"):
         environment = os.environ.copy()
         environment.update(
             {
                 "COMMAND_LOG": str(self.command_log),
                 "FAKE_GIT_EXIT": git_exit,
+                "FAKE_DOWNLOAD_EXIT": download_exit,
                 "PATH": f"{self.fake_bin}{os.pathsep}{environment['PATH']}",
                 "REMOTE_HOST": "komachi.test",
                 "REMOTE_PORT": "2222",
@@ -136,6 +141,7 @@ class RemoteTranscribeTest(unittest.TestCase):
             "",
             encoding="utf-8",
         )
+        (self.remote_project / "scripts" / "download.sh").write_text("")
         if include_compose:
             (self.remote_project / "docker-compose.yml").write_text(
                 "services: {}\n",
@@ -163,7 +169,7 @@ class RemoteTranscribeTest(unittest.TestCase):
         self.assertNotIn("rsync", self.logged_commands())
         self.assertNotIn("docker", self.logged_commands())
 
-    def test_syncs_validates_and_builds_before_upload(self):
+    def test_syncs_builds_downloads_and_transcribes(self):
         self.create_remote_runtime()
 
         result = self.run_script()
@@ -180,14 +186,20 @@ class RemoteTranscribeTest(unittest.TestCase):
             commands[2],
         )
         self.assertTrue(commands[3].startswith("rsync "))
-        self.assertIn("episode.mp3", commands[3])
+        self.assertIn("--ignore-existing", commands[3])
+        self.assertIn("/audio/", commands[3])
+        self.assertEqual(
+            "WHISPER_MODEL= docker compose run --rm whisper "
+            "bash /app/scripts/download.sh",
+            commands[4],
+        )
         self.assertEqual(
             "WHISPER_MODEL=medium docker compose run --rm whisper "
             "python /app/scripts/transcribe.py",
-            commands[4],
+            commands[5],
         )
-        self.assertTrue(commands[5].startswith("rsync "))
-        self.assertIn("/srt/*.srt", commands[5])
+        self.assertTrue(commands[6].startswith("rsync "))
+        self.assertIn("/srt/", commands[6])
 
     def test_forwards_agent_only_for_git_sync(self):
         self.create_remote_runtime()
@@ -199,3 +211,60 @@ class RemoteTranscribeTest(unittest.TestCase):
         self.assertEqual(2, len(connections))
         self.assertIn("-A", shlex.split(connections[0]))
         self.assertNotIn("-A", shlex.split(connections[1]))
+
+    def test_downloads_without_local_audio(self):
+        self.create_remote_runtime()
+        shutil.rmtree(self.local_project / "data" / "audio")
+        result = self.run_script()
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertIn("bash /app/scripts/download.sh", self.logged_commands())
+        self.assertNotIn("--ignore-existing", self.logged_commands())
+
+    def test_download_failure_stops_transcription_and_result_sync(self):
+        self.create_remote_runtime()
+        result = self.run_script(download_exit="17")
+        self.assertNotEqual(0, result.returncode)
+        self.assertNotIn("python /app/scripts/transcribe.py", self.logged_commands())
+        self.assertNotIn("/srt/", self.logged_commands())
+
+    def test_merges_download_history_without_losing_remote_entries(self):
+        self.create_remote_runtime()
+        data = self.remote_project / "data"
+        data.mkdir()
+        (data / "downloaded.txt").write_text("youtube remote\nyoutube shared\n")
+        (data / "downloaded.local.txt").write_text("youtube local\nyoutube shared\n")
+        result = self.run_script()
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual(
+            "youtube local\nyoutube remote\nyoutube shared\n",
+            (data / "downloaded.txt").read_text(),
+        )
+        self.assertFalse((data / "downloaded.local.txt").exists())
+
+
+class DownloadTest(unittest.TestCase):
+    def test_empty_download_succeeds_and_download_failure_is_propagated(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            scripts = root / "scripts"
+            scripts.mkdir()
+            script = scripts / "download.sh"
+            shutil.copy2(SOURCE_SCRIPT.with_name("download.sh"), script)
+            fake_bin = root / "bin"
+            fake_bin.mkdir()
+            downloader = fake_bin / "yt-dlp"
+            downloader.write_text('#!/bin/bash\nexit "${DOWNLOAD_EXIT:-0}"\n')
+            downloader.chmod(0o755)
+            environment = os.environ.copy()
+            environment["PATH"] = f"{fake_bin}{os.pathsep}{environment['PATH']}"
+            for exit_code in (0, 19):
+                with self.subTest(exit_code=exit_code):
+                    environment["DOWNLOAD_EXIT"] = str(exit_code)
+                    result = subprocess.run(
+                        [str(script)], env=environment, capture_output=True, text=True,
+                    )
+                    self.assertEqual(exit_code, result.returncode, result.stderr)
+                    if exit_code == 0:
+                        self.assertIn("Total: 0", result.stdout)
+                    else:
+                        self.assertNotIn("Download complete!", result.stdout)

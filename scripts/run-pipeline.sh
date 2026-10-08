@@ -28,12 +28,8 @@ echo "=== Pipeline started at $(date) ==="
 echo "Project directory: $PROJECT_DIR"
 echo "envchain namespace: $ENVCHAIN_NS"
 
-# Step 1: Download
-echo "[1/5] Downloading new videos..."
-"${SCRIPT_DIR}/download.sh"
-
-# Step 2: Transcribe (リモートGPUサーバーで実行)
-echo "[2/5] Transcribing with Whisper (remote)..."
+# Download and transcribe on the remote GPU server
+echo "[1-2/5] Downloading and transcribing (remote)..."
 envchain "$ENVCHAIN_NS" "${SCRIPT_DIR}/remote-transcribe.sh"
 
 # Step 3: Chunk SRT

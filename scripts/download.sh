@@ -19,10 +19,12 @@ yt-dlp -x --audio-format mp3 --audio-quality 0 \
   -o "${OUTPUT_DIR}/%(upload_date)s_%(title)s_%(id)s.%(ext)s" \
   --download-archive "$ARCHIVE_FILE" \
   --embed-thumbnail --add-metadata \
-  --progress --ignore-errors \
+  --progress \
   "$CHANNEL_URL"
 
 echo ""
 echo "Download complete!"
 echo "Files in ${OUTPUT_DIR}:"
-ls -lh "$OUTPUT_DIR"/*.mp3 2>/dev/null | wc -l | xargs echo "Total:"
+shopt -s nullglob
+audio_files=("$OUTPUT_DIR"/*.mp3)
+echo "Total: ${#audio_files[@]}"
