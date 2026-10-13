@@ -112,14 +112,15 @@ if [[ -f data/downloaded.local.txt ]]; then
     rm data/downloaded.local.txt
 fi
 
-docker compose run --rm whisper bash /app/scripts/download.sh
+# コンテナがSSHで渡した後続のコマンドを標準入力として消費するのを防ぐ。
+docker compose run --rm whisper bash /app/scripts/download.sh </dev/null
 if ! compgen -G "data/audio/*.mp3" > /dev/null; then
     echo "No audio files to transcribe"
     exit 0
 fi
 
 WHISPER_MODEL="$whisper_model" \
-    docker compose run --rm whisper python /app/scripts/transcribe.py
+    docker compose run --rm whisper python /app/scripts/transcribe.py </dev/null
 REMOTE_TRANSCRIBE
 
 success "Remote transcription complete"

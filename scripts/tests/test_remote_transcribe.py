@@ -80,6 +80,9 @@ class RemoteTranscribeTest(unittest.TestCase):
                 [[ "${FAKE_DOWNLOAD_EXIT:-0}" == 0 ]] || exit "$FAKE_DOWNLOAD_EXIT"
                 touch data/audio/downloaded.mp3
             fi
+            if [[ "$*" == *"compose run"* ]]; then
+                cat >/dev/null
+            fi
             """,
         )
         self.write_executable(
